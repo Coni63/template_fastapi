@@ -5,12 +5,13 @@ from api.routes.todo import router, openapi_tag
 from app.services.database import Database
 from fastapi import FastAPI
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Database.setup_db()
     yield
     Database.drop_db()
-    
+
 
 description = """
 # INFORMATION
