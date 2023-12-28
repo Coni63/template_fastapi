@@ -43,16 +43,16 @@ class Database:
                 )
                 return [
                     Todo(
-                        id= row[0],
-                        title= row[1],
-                        description= row[2],
-                        state= row[3],
+                        id=row[0],
+                        title=row[1],
+                        description=row[2],
+                        state=row[3],
                     )
                     for row in cursor.fetchall()
                 ]
-        except Exception as e:
+        except Exception:
             return []
-    
+
     @staticmethod
     def get_item_by_id(id: int) -> Todo | None:
         try:
@@ -67,18 +67,18 @@ class Database:
                 )
                 row = cursor.fetchone()
                 return Todo(
-                    id= row[0],
-                    title= row[1],
-                    description= row[2],
-                    state= row[3],
+                    id=row[0],
+                    title=row[1],
+                    description=row[2],
+                    state=row[3],
                 )
-        except Exception as e:
+        except Exception:
             return None
-        
-    @staticmethod  
+
+    @staticmethod
     def create_item(item: Todo) -> int:
         with sqlite3.connect(Database.path_db) as conn:
-            cursor=conn.cursor()
+            cursor = conn.cursor()
             cursor.execute(
                 """
                 INSERT INTO todo (title, description, state)
@@ -87,8 +87,7 @@ class Database:
                 (item.title, item.description, item.state),
             )
             return cursor.lastrowid
-            
-        
+
     @staticmethod
     def update_item(id: int, new_item: Todo):
         with sqlite3.connect(Database.path_db) as conn:
@@ -100,7 +99,7 @@ class Database:
                 """,
                 (new_item.title, new_item.description, new_item.state, id),
             )
-    
+
     @staticmethod
     def delete_item(id: int):
         with sqlite3.connect(Database.path_db) as conn:
@@ -111,4 +110,3 @@ class Database:
                 """,
                 (id,),
             )
-        
