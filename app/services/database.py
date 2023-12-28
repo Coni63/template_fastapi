@@ -1,56 +1,65 @@
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import SQLModel, select
+from sqlmodel.ext.asyncio.session import AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from app.entities.todo import Todo
 
 
 class Database:
-    engine = create_engine("sqlite:///database.sqlite")
+    engine = create_async_engine("sqlite+aiosqlite:///database.sqlite")
 
     @staticmethod
-    def setup_db():
-        SQLModel.metadata.create_all(Database.engine)
+    async def setup_db():
+        async with Database.engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.create_all)
 
     @staticmethod
-    def drop_db():
-        SQLModel.metadata.drop_all(Database.engine)
+    async def drop_db():
+        async with Database.engine.begin() as conn:
+            await conn.run_sync(SQLModel.metadata.drop_all)
 
     @staticmethod
-    def get_all_items() -> list[Todo]:
-        with Session(Database.engine) as session:
-            return session.exec(select(Todo)).all()
+    async def get_all_items() -> list[Todo]:
+        async with AsyncSession(Database.engine) as session:
+            query = await session.exec(select(Todo))
+            return query.all()
 
     @staticmethod
-    def get_item_by_id(id: int) -> Todo | None:
-        with Session(Database.engine) as session:
+    async def get_item_by_id(id: int) -> Todo | None:
+        async with AsyncSession(Database.engine) as session:
             statement = select(Todo).where(Todo.id == id)
-            return session.exec(statement).first()
+            query = await session.exec(statement)
+            return query.first()
 
     @staticmethod
-    def create_item(item: Todo) -> int:
-        with Session(Database.engine) as session:
+    async def create_item(item: Todo) -> int:
+        async with AsyncSession(Database.engine) as session:
             session.add(item)
-            session.commit()
-            session.refresh(item)
+            await session.commit()
+            await session.refresh(item)
             return item.id
 
     @staticmethod
-    def update_item(id: int, new_item: Todo):
-        with Session(Database.engine) as session:
+    async def update_item(id: int, new_item: Todo):
+        async with AsyncSession(Database.engine) as session:
             statement = (
                 select(Todo)
                 .where(Todo.id == id)
             )
-            item = session.exec(statement).one()
+            query = await session.exec(statement)
+            item = query.one()
             item.title = new_item.title
             item.description = new_item.description
             item.state = new_item.state
             session.add(item)
-            session.commit()
+            await session.commit()
 
     @staticmethod
-    def delete_item(id: int):
-        with Session(Database.engine) as session:
+    async def delete_item(id: int):
+        async with AsyncSession(Database.engine) as session:
             statement = select(Todo).where(Todo.id == id)
-            element = session.exec(statement).first()
-
-            session.delete(element)
-            session.commit()
+            query = await session.exec(statement)
+            element = query.one_or_none()
+            if element is None:
+                return 
+            await session.delete(element)
+            await session.commit()

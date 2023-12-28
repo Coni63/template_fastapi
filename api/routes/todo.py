@@ -17,21 +17,21 @@ openapi_tag = {
 }
 
 router = APIRouter(
-    prefix=f"/todo",
+    prefix="/todo",
     tags=[openapi_tag["name"]],
     responses={404: {"description": "Not found"}},
 )
 
 
 @router.get("/", tags=[openapi_tag["name"]], status_code=status.HTTP_200_OK)
-def route_get_all_items() -> list[Todo]:
-    return get_all_items()
+async def route_get_all_items() -> list[Todo]:
+    return await get_all_items()
 
 
 @router.get("/{id}", tags=[openapi_tag["name"]], status_code=status.HTTP_200_OK)
-def route_get_item_by_id(id: int) -> Todo:
+async def route_get_item_by_id(id: int) -> Todo:
     try:
-        return get_item_by_id(id)
+        return await get_item_by_id(id)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -40,9 +40,9 @@ def route_get_item_by_id(id: int) -> Todo:
 
 
 @router.post("/", tags=[openapi_tag["name"]], status_code=status.HTTP_201_CREATED)
-def route_create_item(item: Todo) -> Todo:
+async def route_create_item(item: Todo) -> Todo:
     try:
-        return create_item(item)
+        return await create_item(item)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -51,9 +51,9 @@ def route_create_item(item: Todo) -> Todo:
 
 
 @router.put("/{id}", tags=[openapi_tag["name"]], status_code=status.HTTP_200_OK)
-def route_update_item(id: int, new_item: Todo) -> Todo:
+async def route_update_item(id: int, new_item: Todo) -> Todo:
     try:
-        return update_item(id, new_item)
+        return await update_item(id, new_item)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -62,9 +62,9 @@ def route_update_item(id: int, new_item: Todo) -> Todo:
 
 
 @router.delete("/{id}", tags=[openapi_tag["name"]], status_code=status.HTTP_204_NO_CONTENT)
-def route_delete_item(id: int):
+async def route_delete_item(id: int):
     try:
-        delete_item(id)
+        await delete_item(id)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
