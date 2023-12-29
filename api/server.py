@@ -8,9 +8,10 @@ from fastapi import FastAPI
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await Database.setup_db()
+    database = Database()
+    await database.setup_db()
     yield
-    await Database.drop_db()
+    await database.drop_db()
 
 
 description = """
